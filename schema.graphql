@@ -38,4 +38,5 @@ type Badge @entity {
   burnedAt: Int
   revokedAt: Int
   revokedReason: String
+  revokedBy: Bytes
 }

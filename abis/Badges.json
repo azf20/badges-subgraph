@@ -35,7 +35,7 @@
       {
         "indexed": true,
         "internalType": "address",
-        "name": "reinstatedFrom",
+        "name": "from",
         "type": "address"
       }
     ],
@@ -54,7 +54,7 @@
       {
         "indexed": true,
         "internalType": "address",
-        "name": "revokedFrom",
+        "name": "from",
         "type": "address"
       },
       {

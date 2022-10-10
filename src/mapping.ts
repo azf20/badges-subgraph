@@ -10,7 +10,7 @@ import {
   MetadataUpdate,
 } from '../generated/Raft/Raft';
 import { Badge, BadgeSpec, Raft } from '../generated/schema';
-import { log, json, JSONValue, JSONValueKind } from '@graphprotocol/graph-ts';
+import { log, json, JSONValue, JSONValueKind, Address } from '@graphprotocol/graph-ts';
 import { ipfs } from '@graphprotocol/graph-ts';
 import {
   getCIDFromIPFSUri,
@@ -95,6 +95,7 @@ export function handleSpecCreated(event: SpecCreated): void {
   let expiresAt: string | null = null;
 
   const cidPath = appendMetadataPath(cid);
+
   const metadataBytes = ipfs.cat(cidPath);
   if (metadataBytes) {
     const result = json.try_fromBytes(metadataBytes);
@@ -182,9 +183,10 @@ export function handleBadgeRevoked(event: BadgeRevoked): void {
   const badgeId = getBadgeID(tokenId, badgeAddress);
   const timestamp = event.block.timestamp;
   const reasonCode = event.params.reason;
+  const revokedBy = event.params.from;
   const reason = getReasonString(reasonCode);
 
-  updateBadgeRevocationStatus('handleBadgeRevoked', badgeId, timestamp.toU32(), reason);
+  updateBadgeRevocationStatus('handleBadgeRevoked', badgeId, timestamp.toU32(), reason, revokedBy);
 }
 
 export function handleBadgeReinstated(event: BadgeReinstated): void {
@@ -192,7 +194,7 @@ export function handleBadgeReinstated(event: BadgeReinstated): void {
   const badgeAddress = event.address;
   const badgeId = getBadgeID(tokenId, badgeAddress);
 
-  updateBadgeRevocationStatus('handleBadgeReinstated', badgeId, 0, '');
+  updateBadgeRevocationStatus('handleBadgeReinstated', badgeId, 0, '', null);
 }
 
 function updateBadgeRevocationStatus(
@@ -200,13 +202,13 @@ function updateBadgeRevocationStatus(
   badgeId: string,
   timestamp: number,
   reason: string,
-) {
+  revokedBy: Address | null,
+): void {
   const badge = Badge.load(badgeId);
   if (badge !== null) {
-    // todo: not sure about storing it like this. Maybe we need a better way to store this
-    // todo: still not capturing revokedBy
-    badge.revokedAt = timestamp;
     badge.revokedReason = reason;
+    badge.revokedAt = timestamp as u32;
+    badge.revokedBy = revokedBy;
     badge.save();
   } else {
     log.error('{}: Badge {} not found. Badge entity was not updated with revocation details', [
