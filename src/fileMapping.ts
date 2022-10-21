@@ -7,7 +7,7 @@ export function handleSpecMetadata(content: Bytes): void {
 
   let context = dataSource.context()
   let cid = context.getString('ipfsHash')
-  log.warning('--> got metadata {}', [cid])
+  log.warning('--> got metadata file {}', [cid])
 
   const result = json.try_fromBytes(content);
   if (result.isOk) {
@@ -34,7 +34,7 @@ export function handleRaftMetadata(content: Bytes): void {
 
   let context = dataSource.context()
   let cid = context.getString('ipfsHash')
-  log.warning('--> got metadata {}', [cid])
+  log.warning('--> got metadata file {}', [cid])
 
   const result = json.try_fromBytes(content);
   if (result.isOk) {
